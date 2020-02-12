@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { PropTypes } from 'prop-types';
 import { SIHContext } from './SIHContext';
 
@@ -10,7 +10,7 @@ const defaultContainerStyle ={
 
 const defaultImageStyle = {
     opacity: 0,
-    transition: 'opacity 1s ease'
+    transition: 'opacity .5s ease'
 }
 
 
@@ -41,7 +41,7 @@ function _construct_param_obj(
     const edits = {};
 
     if (width || height) {
-        const resize = {'fit': resizeMode || 'fill'};
+        const resize = {'fit': resizeMode || 'cover'};
         if (width)
             resize.width = width;
         if (height)
@@ -80,6 +80,48 @@ function Img({previewUrl, url, width, height}) {
 
 }
 
+function BackgroundImg(props) {
+
+    const {
+        previewUrl,
+        url,
+        style
+    } = props;
+
+    const className = props.className || 'sih-background-image';
+
+    const [backgroundImage, setBackgroundImage] = useState(previewUrl);
+
+    const onload = () => {
+        console.log('Image loaded');
+        setBackgroundImage(url);
+    }
+
+    const loadImg = () => {
+        console.log('loading image')
+        const img = new Image();
+        img.onload = onload;
+        img.src = url;
+    }
+
+    useEffect( ()=> {
+        // const wait = Math.floor(Math.random() * 500);
+        // setTimeout(loadImg, wait);
+        loadImg();
+    }, []); 
+
+    const containerStyle = {
+        ...style,
+        backgroundImage: `url(${backgroundImage})`,
+        transition: 'background .5s linear'
+    }
+    
+    return (
+    <div className={className} style={containerStyle}>
+        {props.children}
+    </div>)
+}
+
 function SIHImage(props) {
     const {
         endpoint, 
@@ -105,15 +147,56 @@ function SIHImage(props) {
     const previewObj = _construct_param_obj(
         bucket, 
         props.src, 
-        20, 
         null, 
-        'cover', 
+        50, 
+        props.resizeMode || resizeMode,
         grayscalePreview,
         false );
     
     const previewUrl = _encode(endpoint, previewObj);
 
     return (<Img previewUrl={previewUrl} url={url} width={props.width} height={props.height}/>);
+}
+
+function SIHBackgroundImage(props) {
+    const {
+        endpoint, 
+        bucket,
+        width,
+        height,
+        resizeMode,
+        grayscale,
+        normalize,
+        grayscalePreview
+    } = useContext(SIHContext);
+
+    const obj = _construct_param_obj(
+        bucket, 
+        props.src, 
+        props.width || width, 
+        props.height || height, 
+        props.resizeMode || resizeMode,
+        grayscale,
+        normalize );
+
+
+    const url = _encode(endpoint, obj);
+
+    const previewObj = _construct_param_obj(
+        bucket, 
+        props.src, 
+        null, 
+        50, 
+        props.resizeMode || resizeMode,
+        grayscalePreview,
+        false );
+    
+    const previewUrl = _encode(endpoint, previewObj);
+
+    return (
+        <BackgroundImg previewUrl={previewUrl} url={url} style={props.style} className={props.className}>
+            {props.children}
+        </BackgroundImg>); 
 }
 
 SIHImage.propTypes = {
@@ -123,5 +206,5 @@ SIHImage.propTypes = {
     resizeMode: PropTypes.oneOf(['fill', 'cover', 'contain', 'inside', 'outside']),
 }
 
-export default SIHImage;
+export { SIHImage , SIHBackgroundImage };
 

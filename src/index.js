@@ -1,5 +1,5 @@
-import SIHImageLoader from './component/SIHImageLoader.jsx';
+import { SIHImage , SIHBackgroundImage } from './component/SIHImageLoader.jsx';
 import { SIHContext } from './component/SIHContext';
-import { AWSSIHConfig} from './component/AWSSIHConfig.jsx';
+import { AWSSIHContext} from './component/AWSSIHConfig.jsx';
 
-export { SIHImageLoader as AWSSIHImg, AWSSIHConfig };
+export { SIHImage as AWSSIHImg, SIHBackgroundImage as AWSSIHBackgroundImage, AWSSIHContext };
