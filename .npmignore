@@ -1,5 +1,6 @@
 src/
 demo/
+samples/
 test/
 .babelrc
 .eslintrc

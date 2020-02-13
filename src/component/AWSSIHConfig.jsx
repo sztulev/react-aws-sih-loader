@@ -11,7 +11,9 @@ const ConfigPropType = {
     previewWidth: PropTypes.number, 
     previewHeight: PropTypes.number, 
     previewResizeMode: PropTypes.oneOf(['fill', 'contain', 'cover', 'inside', 'outside']),
-    previewGrayscale: PropTypes.boolean 
+    previewGrayscale: PropTypes.boolean,
+    transitionDuration: PropTypes.string,
+    transitionTimingFunction: PropTypes.string
 }
 
 
@@ -24,7 +26,9 @@ const defaultConfig = {
     previewWidth: null, 
     previewHeight: 50, 
     previewResizeMode: null,
-    previewGrayscale: false
+    previewGrayscale: false,
+    transitionDuration: '.5s',
+    transitionTimingFunction: 'linear'
 }
 
 function AWSSIHContext(props) {

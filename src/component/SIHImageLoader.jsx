@@ -6,12 +6,14 @@ import { ConfigPropType } from './AWSSIHConfig.jsx';
 const defaultContainerStyle ={
     display: 'flex',
     overflow: 'hidden',  
-    backgroundSize: '100% 100%'
+    backgroundSize: '100% auto',
+    backgroundPosition: 'cover',
+    backgroundRepeat: 'no-repeat'
 }
 
 const defaultImageStyle = {
     opacity: 0,
-    transition: 'opacity .5s ease'
+    transitionProperty: 'opacity'
 }
 
 function _encode(endpoint, param_obj) {
@@ -110,9 +112,11 @@ function SIHImage(props) {
     />);
 }
 
-function LazyLoadImg({previewUrl, url, width, height, style, className, imgClassname}) {
+function LazyLoadImg({previewUrl, url, width, height, style, className, imgClassname, transitionDuration, transitionTimingFunction}) {
 
-    const [imgStyle, setImgStyle] = useState({...defaultImageStyle, width, height});
+    const [imgStyle, setImgStyle] = useState({...defaultImageStyle, width, height, transitionDuration, transitionTimingFunction});
+
+    const [imgSrc, setImgSrc] = useState();
 
     const containerStyle = { ...defaultContainerStyle, ...style, backgroundImage: `url(${previewUrl})` };
 
@@ -120,15 +124,19 @@ function LazyLoadImg({previewUrl, url, width, height, style, className, imgClass
         setImgStyle({...imgStyle, opacity: 1});
     };
 
+    useEffect( ()=> {
+        setImgSrc(url);
+    }, []); 
+
     return (
     <div className={className || 'sih-image-container'} style={containerStyle}>
-        <img src={url} style={imgStyle} onLoad={onload} className={imgClassname}/>
+        <img src={imgSrc} style={imgStyle} onLoad={onload} className={imgClassname}/>
     </div>);
 }
 
 function SIHLazyLoadImage(props) {
-    const cxtConfig = useContext(SIHContext); 
-
+    const cxtConfig = useContext(SIHContext);
+    
     const config = { ...cxtConfig, ...props.config };  
 
     const { url, previewUrl } = _create_urls(props.src, config);
@@ -141,6 +149,8 @@ function SIHLazyLoadImage(props) {
         style={props.style} 
         className={props.className}
         imgClassname = {props.imgClassName}
+        transitionDuration={config.transitionDuration}
+        transitionTimingFunction={config.transitionTimingFunction}
     />);
 }
 
@@ -183,7 +193,9 @@ function LazyLoadBackgroundImg(props) {
     const {
         previewUrl,
         url,
-        style
+        style,
+        transitionDuration,
+        transitionTimingFunction
     } = props;
 
     const className = props.className || 'sih-lazyload-background-image';
@@ -207,7 +219,9 @@ function LazyLoadBackgroundImg(props) {
     const containerStyle = {
         ...style,
         backgroundImage: `url(${backgroundImage})`,
-        transition: 'background .5s linear'
+        transitionProperty: 'background',
+        transitionDuration: transitionDuration,
+        transitionTimingFunction: transitionTimingFunction
     };
     
     return (
@@ -225,7 +239,13 @@ function SIHLazyLoadBackgroundImage(props) {
     const { url, previewUrl } = _create_urls(props.src, config);
 
     return (
-    <LazyLoadBackgroundImg previewUrl={previewUrl} url={url} style={props.style} className={props.className}>
+    <LazyLoadBackgroundImg 
+            previewUrl={previewUrl} 
+            url={url} 
+            style={props.style} 
+            className={props.className}
+            transitionDuration={config.transitionDuration}
+            transitionTimingFunction={config.transitionTimingFunction}>
         {props.children}
     </LazyLoadBackgroundImg>); 
 }
