@@ -1,6 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { PropTypes } from 'prop-types';
 import { SIHContext } from './SIHContext';
+import { ConfigPropType } from './AWSSIHConfig.jsx';
 
 const defaultContainerStyle ={
     display: 'flex',
@@ -13,15 +14,10 @@ const defaultImageStyle = {
     transition: 'opacity .5s ease'
 }
 
-
 function _encode(endpoint, param_obj) {
     const obj_str = JSON.stringify(param_obj);
-    console.log(obj_str);
     let ep = endpoint.endsWith('/') ? endpoint : endpoint + '/';
     const encoded_url = ep + Buffer.from(obj_str).toString("base64");
-
-    console.log(encoded_url);
-
     return encoded_url;
 }
 
@@ -58,29 +54,131 @@ function _construct_param_obj(
 
     obj.edits = edits;
     
-    console.log(obj);
-
     return obj;
 }
 
-function Img({previewUrl, url, width, height}) {
+function _create_url(key, config) {
+    const params = _construct_param_obj(
+        config.bucket, 
+        key, 
+        config.width, 
+        config.height, 
+        config.resizeMode,
+        config.grayscale,
+        config.normalize );
+
+    const url = _encode(config.endpoint, params);
+
+    return url;
+}
+
+function _create_urls(key, config) {
+
+    const previewObj = _construct_param_obj(
+        config.bucket, 
+        key, 
+        config.previewWidth, 
+        config.previewHeight, 
+        config.previewResizeMode || config.resizeMode,
+        config.previewGrayscale,
+        false );
+    
+    const previewUrl = _encode(config.endpoint, previewObj);
+
+    const url = _create_url(key, config);
+
+    return { url, previewUrl };
+}
+
+function Img({ url, width, height, style, className}) {
+    return (<img src={url} style={style} className={className} width={width} height={height} />);
+}
+
+function SIHImage(props) {
+    const cxtConfig = useContext(SIHContext); 
+
+    const config = { ...cxtConfig, ...props.config };  
+
+    const url = _create_url(props.src, config);
+
+    return (<Img 
+        url={url} 
+        width={props.width} 
+        height={props.height}
+        style={props.style} 
+        className={props.className}
+    />);
+}
+
+function LazyLoadImg({previewUrl, url, width, height, style, className, imgClassname}) {
 
     const [imgStyle, setImgStyle] = useState({...defaultImageStyle, width, height});
 
-    const containerStyle = { ...defaultContainerStyle, backgroundImage: `url(${previewUrl})` };
+    const containerStyle = { ...defaultContainerStyle, ...style, backgroundImage: `url(${previewUrl})` };
 
     const onload = () => {
         setImgStyle({...imgStyle, opacity: 1});
-    }
+    };
 
     return (
-        <div className='sih-image-container' style={containerStyle}>
-            <img src={url} style={imgStyle} onLoad={onload}/>
-        </div>)
-
+    <div className={className || 'sih-image-container'} style={containerStyle}>
+        <img src={url} style={imgStyle} onLoad={onload} className={imgClassname}/>
+    </div>);
 }
 
+function SIHLazyLoadImage(props) {
+    const cxtConfig = useContext(SIHContext); 
+
+    const config = { ...cxtConfig, ...props.config };  
+
+    const { url, previewUrl } = _create_urls(props.src, config);
+
+    return (<LazyLoadImg 
+        previewUrl={previewUrl} 
+        url={url} 
+        width={props.width} 
+        height={props.height}
+        style={props.style} 
+        className={props.className}
+        imgClassname = {props.imgClassName}
+    />);
+}
+
+
 function BackgroundImg(props) {
+    const {
+        url,
+        style
+    } = props;
+
+    const className = props.className || 'sih-background-image';
+
+    const containerStyle = {
+        ...style,
+        backgroundImage: `url(${url})`
+    };
+    
+    return (
+    <div className={className} style={containerStyle}>
+        {props.children}
+    </div>);
+}
+
+function SIHBackgroundImage(props) {
+
+    const cxtConfig = useContext(SIHContext); 
+
+    const config = { ...cxtConfig, ...props.config };  
+
+    const url = _create_url(props.src, config);
+
+    return (
+    <BackgroundImg url={url} style={props.style} className={props.className}>
+        {props.children}
+    </BackgroundImg>); 
+}
+
+function LazyLoadBackgroundImg(props) {
 
     const {
         previewUrl,
@@ -88,25 +186,21 @@ function BackgroundImg(props) {
         style
     } = props;
 
-    const className = props.className || 'sih-background-image';
+    const className = props.className || 'sih-lazyload-background-image';
 
     const [backgroundImage, setBackgroundImage] = useState(previewUrl);
 
     const onload = () => {
-        console.log('Image loaded');
         setBackgroundImage(url);
-    }
+    };
 
     const loadImg = () => {
-        console.log('loading image')
         const img = new Image();
         img.onload = onload;
         img.src = url;
-    }
+    };
 
     useEffect( ()=> {
-        // const wait = Math.floor(Math.random() * 500);
-        // setTimeout(loadImg, wait);
         loadImg();
     }, []); 
 
@@ -114,97 +208,68 @@ function BackgroundImg(props) {
         ...style,
         backgroundImage: `url(${backgroundImage})`,
         transition: 'background .5s linear'
-    }
+    };
     
     return (
     <div className={className} style={containerStyle}>
         {props.children}
-    </div>)
+    </div>);
 }
 
-function SIHImage(props) {
-    const {
-        endpoint, 
-        bucket,
-        resizeMode,
-        grayscale,
-        normalize,
-        grayscalePreview
-    } = useContext(SIHContext);
+function SIHLazyLoadBackgroundImage(props) {
 
-    const obj = _construct_param_obj(
-        bucket, 
-        props.src, 
-        props.width, 
-        props.height, 
-        props.resizeMode || resizeMode,
-        grayscale,
-        normalize );
+    const cxtConfig = useContext(SIHContext); 
 
+    const config = { ...cxtConfig, ...props.config };  
 
-    const url = _encode(endpoint, obj);
-
-    const previewObj = _construct_param_obj(
-        bucket, 
-        props.src, 
-        null, 
-        50, 
-        props.resizeMode || resizeMode,
-        grayscalePreview,
-        false );
-    
-    const previewUrl = _encode(endpoint, previewObj);
-
-    return (<Img previewUrl={previewUrl} url={url} width={props.width} height={props.height}/>);
-}
-
-function SIHBackgroundImage(props) {
-    const {
-        endpoint, 
-        bucket,
-        width,
-        height,
-        resizeMode,
-        grayscale,
-        normalize,
-        grayscalePreview
-    } = useContext(SIHContext);
-
-    const obj = _construct_param_obj(
-        bucket, 
-        props.src, 
-        props.width || width, 
-        props.height || height, 
-        props.resizeMode || resizeMode,
-        grayscale,
-        normalize );
-
-
-    const url = _encode(endpoint, obj);
-
-    const previewObj = _construct_param_obj(
-        bucket, 
-        props.src, 
-        null, 
-        50, 
-        props.resizeMode || resizeMode,
-        grayscalePreview,
-        false );
-    
-    const previewUrl = _encode(endpoint, previewObj);
+    const { url, previewUrl } = _create_urls(props.src, config);
 
     return (
-        <BackgroundImg previewUrl={previewUrl} url={url} style={props.style} className={props.className}>
-            {props.children}
-        </BackgroundImg>); 
+    <LazyLoadBackgroundImg previewUrl={previewUrl} url={url} style={props.style} className={props.className}>
+        {props.children}
+    </LazyLoadBackgroundImg>); 
 }
 
 SIHImage.propTypes = {
     src: PropTypes.string.isRequired,
-    width: PropTypes.number,
-    height: PropTypes.number,
-    resizeMode: PropTypes.oneOf(['fill', 'cover', 'contain', 'inside', 'outside']),
+    className: PropTypes.string,
+    style: PropTypes.string,
+    width: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number]),
+    height: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number]),
+    config: PropTypes.exact(ConfigPropType)
 }
 
-export { SIHImage , SIHBackgroundImage };
+SIHLazyLoadImage.propTypes = {
+    src: PropTypes.string.isRequired,
+    className: PropTypes.string,
+    imgClassName: PropTypes.string,
+    style: PropTypes.string,
+    width: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number]),
+    height: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number]),
+    config: PropTypes.exact(ConfigPropType)
+}
+
+SIHBackgroundImage.propTypes = {
+    src: PropTypes.string.isRequired,
+    className: PropTypes.string,
+    style: PropTypes.string,
+    config: PropTypes.exact(ConfigPropType)
+}
+
+SIHLazyLoadBackgroundImage.propTypes = {
+    src: PropTypes.string.isRequired,
+    className: PropTypes.string,
+    style: PropTypes.string,
+    config: PropTypes.exact(ConfigPropType)
+}
+
+export { SIHImage, SIHLazyLoadImage , SIHBackgroundImage, SIHLazyLoadBackgroundImage };
 

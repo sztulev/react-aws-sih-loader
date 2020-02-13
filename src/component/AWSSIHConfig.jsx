@@ -2,20 +2,41 @@ import React, { useContext, useState } from 'react';
 import { PropTypes } from 'prop-types';
 import { SIHContext } from './SIHContext';
 
+
+const ConfigPropType = {
+    width: PropTypes.number,
+    height: PropTypes.number,
+    resizeMode: PropTypes.oneOf(['fill', 'contain', 'cover', 'inside', 'outside']),
+    grayscale: PropTypes.boolean,
+    previewWidth: PropTypes.number, 
+    previewHeight: PropTypes.number, 
+    previewResizeMode: PropTypes.oneOf(['fill', 'contain', 'cover', 'inside', 'outside']),
+    previewGrayscale: PropTypes.boolean 
+}
+
+
 const defaultConfig = {
     width: null,
     height: null,
     resizeMode: 'cover',
     normalize: false,
     grayscale: false,
+    previewWidth: null, 
+    previewHeight: 50, 
+    previewResizeMode: null,
     previewGrayscale: false
 }
 
 function AWSSIHContext(props) {
 
+    const upperConfig = useContext(SIHContext);
+
     const { config } = props;
 
-    const mergedConfig = { ...defaultConfig, ...config };
+    const mergedConfig = { ...defaultConfig, ...upperConfig, ...config };
+
+    console.log(mergedConfig);
+
 
     if (!mergedConfig.endpoint)
         throw `Missing configuration 'endpoint'`;
@@ -23,10 +44,17 @@ function AWSSIHContext(props) {
     if (!mergedConfig.bucket)
         throw `Missing configuration 'bucket'`;
 
+    
     return (
         <SIHContext.Provider value={mergedConfig}>
             {props.children}
         </SIHContext.Provider>);
 }
 
-export { AWSSIHContext };
+ 
+
+AWSSIHContext.propTypes = {
+    config: PropTypes.exact(ConfigPropType)
+}
+
+export { AWSSIHContext , ConfigPropType };

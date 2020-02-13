@@ -9,6 +9,10 @@
 # production
 /lib
 
+#demo and samples
+/demo
+/samples
+
 # misc
 *.code-workspace
 .DS_Store

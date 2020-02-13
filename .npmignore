@@ -4,3 +4,4 @@ test/
 .babelrc
 .eslintrc
 webpack.config.js
+*.code-workspace
