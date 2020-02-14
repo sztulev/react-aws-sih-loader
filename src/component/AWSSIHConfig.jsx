@@ -4,6 +4,7 @@ import { SIHContext } from './SIHContext';
 
 
 const ConfigPropType = {
+    debug: PropTypes.boolean,
     width: PropTypes.number,
     height: PropTypes.number,
     resizeMode: PropTypes.oneOf(['fill', 'contain', 'cover', 'inside', 'outside']),
@@ -18,6 +19,7 @@ const ConfigPropType = {
 
 
 const defaultConfig = {
+    debug: false,
     width: null,
     height: null,
     resizeMode: 'cover',
@@ -39,7 +41,8 @@ function AWSSIHContext(props) {
 
     const mergedConfig = { ...defaultConfig, ...upperConfig, ...config };
 
-    console.log(mergedConfig);
+    if (config.debug)
+        console.log(mergedConfig);
 
 
     if (!mergedConfig.endpoint)
