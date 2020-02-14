@@ -1,6 +1,6 @@
 {
     "name": "react-aws-sih-loader",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "description": "React image loader component for AWS ServerlessImageHandler (SIH)",
     "main": "./lib/index.js",
     "license": "MIT",
