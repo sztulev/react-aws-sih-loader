@@ -2,7 +2,9 @@
 
 Simple and small React or Next.js component to load or lazy load images from AWS ServerlessImageHandler API.
 
-See demos at https://react-aws-sih-loader-nextjs-demo.now.sh/
+See demos at https://react-aws-sih-loader-nextjs-demo.now.sh/.
+
+Source code at https://github.com/sztulev/react-aws-sih-loader.
 
 ## Introduction
 The AWS Serverless Image Handler is a low cost option to host and dynamically resize or transform high resolution images of significant number and size. The solution automatically deploys and configures an AWS serverless architecture that uses Amazon S3 for storage, AWS Lambda and the open source image processing suite Sharp for image manipulation, and Amazon CloudFront for global content delivery. For more details on the AWS ServerlessImageHandler, see [AWS SIH Documentation](https://docs.aws.amazon.com/solutions/latest/serverless-image-handler/welcome.html)
