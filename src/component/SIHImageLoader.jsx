@@ -5,9 +5,11 @@ import { ConfigPropType } from './AWSSIHConfig.jsx';
 
 const defaultContainerStyle ={
     display: 'flex',
+    width:'fit-content',
+    height:'fit-content',
     overflow: 'hidden',  
-    backgroundSize: '100% auto',
-    backgroundPosition: 'cover',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat'
 }
 
