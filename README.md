@@ -1,13 +1,16 @@
 # React Image Loader Component for AWS ServerlessImageHandler (SIH)
 
-Simple and small React or Next.js component to load or lazy load images from AWS ServerlessImageHandler API.
+Small React / Next.js component to load amd lazy load large images from Amazon S3 via AWS ServerlessImageHandler.
 
 See demos at https://react-aws-sih-loader-nextjs-demo.now.sh/.
 
 Source code at https://github.com/sztulev/react-aws-sih-loader.
 
 ## Introduction
-The AWS Serverless Image Handler is a low cost option to host and dynamically resize or transform high resolution images of significant number and size. The solution automatically deploys and configures an AWS serverless architecture that uses Amazon S3 for storage, AWS Lambda and the open source image processing suite Sharp for image manipulation, and Amazon CloudFront for global content delivery. For more details on the AWS ServerlessImageHandler, see [AWS SIH Documentation](https://docs.aws.amazon.com/solutions/latest/serverless-image-handler/welcome.html)
+Amazon S3 may be one option to host large images of a Next.js website or React app. The AWS Serverless Image Handler (SIH) can come handy to dynamically transform those images and adjust their size and to significantly improve the perfomance of your website. This npmjs package exports several React component that can help you transforming and loading images from AWS SIH API. In order to use it, at the minimum, you will need a AWS Account and AWS SIH deployed. [Follow this link](https://aws.amazon.com/solutions/serverless-image-handler/) to find out more details on how to setup an AWS SIH solution.
+
+## About AWS Serverless Image Handler
+The AWS Serverless Image Handler automatically deploys and configures an AWS serverless architecture that uses Amazon S3 for storage, AWS Lambda and the open source image processing suite Sharp for image manipulation, and Amazon CloudFront for global content delivery. For more details on the AWS ServerlessImageHandler, see [AWS SIH Documentation](https://docs.aws.amazon.com/solutions/latest/serverless-image-handler/welcome.html)
 
 ## Installation
 
@@ -23,7 +26,7 @@ yarn add react-aws-sih-loader
 
 ## Usage
 
-The simplest way to start with is using the `AWSSIHImg` component. The below example will resize the given image to 640px wide and display it with an `<img>` tag.
+Use `AWSSIHImg` to resize and load a single image. The below example will resize the given image to width of 640px and displays it as an `<img>` tag.
 
 ```jsx static
 import React from 'react';
@@ -43,7 +46,7 @@ function MySIHImg() {
 }
 ```
 
-Use `AWSSIHLazyLoadImg` for lazy Loading images. It wraps the `<img>` tag and displays a low-res image in the background while the large image is being transformed and loaded.
+Use `AWSSIHLazyLoadImg` if you want display an image placeholder before the large image gets fully loaded. It wraps `<img>` in a `<div>` tag with a low-res image in the background while the large image is being transformed and loaded.
 ```jsx static
 import React from 'react';
 import { AWSSIHLazyLoadImg as Img } from 'react-aws-sih-loader';
@@ -61,7 +64,7 @@ function MySIHImg() {
 }
 ```
 
-`AWSSIHBackgroundImage` and `AWSSIHLazyLoadBackgroundImage` can be used add background images to content.
+`AWSSIHBackgroundImage` and `AWSSIHLazyLoadBackgroundImage` can be used to add background images to content.
 ```jsx static
 import React from 'react';
 import { AWSSIHBackgroundImage as BckImg } from 'react-aws-sih-loader';
@@ -81,7 +84,7 @@ function MySIHImg() {
 }
 ```
 
-The common configuration items can be centrally provided by the `AWSSIHContext` component at any higher level as below. It uses React's Context in the background to pass down configuration values.
+`AWSSIHContext` component provides a common configuration option at any higher level. It uses React's Context in the background to pass down configuration items.
 
 ```jsx static
 import React from 'react';
@@ -111,7 +114,7 @@ function MySIHImg() {
 }
 
 ```
-Furthermore, AWSSIHContext components can be embedded, so configuration items can be added or overwritten at lower levels.
+Furthermore, multiple `AWSSIHContext` components can be embedded down the chain, so configuration items can be added or overwritten at lower levels.
 ```jsx static
 import React from 'react';
 import { AWSSIHImg as Img, AWSSIHContext } from 'react-aws-sih-loader';
