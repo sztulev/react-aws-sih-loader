@@ -41,9 +41,6 @@ function AWSSIHContext(props) {
 
     const mergedConfig = { ...defaultConfig, ...upperConfig, ...config };
 
-    if (config.debug)
-        console.log(mergedConfig);
-
 
     if (!mergedConfig.endpoint)
         throw `Missing configuration 'endpoint'`;

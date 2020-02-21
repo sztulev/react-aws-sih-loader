@@ -161,6 +161,4 @@ The `config` property object can be applied on any component. `endpoint` and `bu
 * `previewHeight` default value: 50. height of the preview image when using lazy loading components 
 * `previewResizeMode` same as `resizeMode`, but applied on the preview image when using lazy loading components 
 * `previewGrayscale` true or false, convert the preview image to grayscale
-* `transitionDuration` string value in the format of '_2s_' or '_3000ms_', default value is '_.5s_'.
-* `transitionTimingFunction` value used for CSS transition-timing-function, default is 'linear'
 * `debug` true or false, enable printing the API request onto the console.

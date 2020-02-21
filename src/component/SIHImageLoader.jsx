@@ -3,10 +3,11 @@ import { PropTypes } from 'prop-types';
 import { SIHContext } from './SIHContext';
 import { ConfigPropType } from './AWSSIHConfig.jsx';
 
+import BackgroundImgAnimatedDiv, { fadeInAnimation } from './BackgroundImgAnimated.jsx';
+
+
 const defaultContainerStyle ={
     display: 'flex',
-    width:'fit-content',
-    height:'fit-content',
     overflow: 'hidden',  
     backgroundSize: 'cover',
     backgroundPosition: 'center',
@@ -71,6 +72,9 @@ function _create_url(key, config) {
         config.grayscale,
         config.normalize );
 
+    if (config.debug)
+        console.log(params);
+
     const url = _encode(config.endpoint, params);
 
     return url;
@@ -86,6 +90,9 @@ function _create_urls(key, config) {
         config.previewResizeMode || config.resizeMode,
         config.previewGrayscale,
         false );
+
+    if (config.debug)
+        console.log(previewObj);
     
     const previewUrl = _encode(config.endpoint, previewObj);
 
@@ -94,8 +101,8 @@ function _create_urls(key, config) {
     return { url, previewUrl };
 }
 
-function Img({ url, width, height, style, className}) {
-    return (<img src={url} style={style} className={className} width={width} height={height} />);
+function Img({ url, alt, width, height, style, className}) {
+    return (<img src={url} style={style} className={className} width={width} height={height} alt={alt}/>);
 }
 
 function SIHImage(props) {
@@ -103,10 +110,16 @@ function SIHImage(props) {
 
     const config = { ...cxtConfig, ...props.config };  
 
-    const url = _create_url(props.src, config);
+    const [url, setUrl] = useState(_create_url(props.src, config));
+
+    useEffect(()=>{
+        const newConfig = { ...cxtConfig, ...props.config };  
+        setUrl(_create_url(props.src, newConfig));
+    },[props.src,...Object.values(cxtConfig),...Object.values(props.config)]);
 
     return (<Img 
         url={url} 
+        alt={props.alt}
         width={props.width} 
         height={props.height}
         style={props.style} 
@@ -114,7 +127,7 @@ function SIHImage(props) {
     />);
 }
 
-function LazyLoadImg({previewUrl, url, width, height, style, className, imgClassname, transitionDuration, transitionTimingFunction}) {
+function LazyLoadImg({previewUrl, url, alt, width, height, style, className, imgClassname, transitionDuration, transitionTimingFunction}) {
 
     const [imgStyle, setImgStyle] = useState({...defaultImageStyle, width, height, transitionDuration, transitionTimingFunction});
 
@@ -128,11 +141,11 @@ function LazyLoadImg({previewUrl, url, width, height, style, className, imgClass
 
     useEffect( ()=> {
         setImgSrc(url);
-    }, []); 
+    }, [url]); 
 
     return (
     <div className={className || 'sih-image-container'} style={containerStyle}>
-        <img src={imgSrc} style={imgStyle} onLoad={onload} className={imgClassname}/>
+        <img src={imgSrc} style={imgStyle} onLoad={onload} className={imgClassname} alt={alt}/>
     </div>);
 }
 
@@ -141,11 +154,18 @@ function SIHLazyLoadImage(props) {
     
     const config = { ...cxtConfig, ...props.config };  
 
-    const { url, previewUrl } = _create_urls(props.src, config);
+    const [{ url, previewUrl }, setUrls] = useState(_create_urls(props.src, config));
+
+    useEffect(()=>{
+        const newConfig = { ...cxtConfig, ...props.config };  
+        setUrls(_create_urls(props.src, newConfig));
+
+    },[props.src,...Object.values(cxtConfig),...Object.values(props.config)]);
 
     return (<LazyLoadImg 
         previewUrl={previewUrl} 
         url={url} 
+        alt={props.alt}
         width={props.width} 
         height={props.height}
         style={props.style} 
@@ -153,28 +173,98 @@ function SIHLazyLoadImage(props) {
         imgClassname = {props.imgClassName}
         transitionDuration={config.transitionDuration}
         transitionTimingFunction={config.transitionTimingFunction}
-    />);
+    />)
 }
 
 
-function BackgroundImg(props) {
+// function BackgroundImg(props) {
+//     const {
+//         url,
+//         style
+//     } = props;
+
+//     const className = props.className || 'sih-background-image';
+
+//     const containerStyle = {
+//         ...style,
+//         backgroundImage: `url(${url})`
+//     };
+    
+//     return (
+//     <div className={className} style={containerStyle}>
+//         {props.children}
+//     </div>);
+// }
+
+
+function BackgroundImageFadeIn(props) {
     const {
         url,
-        style
+        style,
+        className
     } = props;
 
-    const className = props.className || 'sih-background-image';
+    const [effectiveUrl, setEffectiveUrl] = useState(url);
+    const [loadState, setLoadState] = useState(0);
 
-    const containerStyle = {
-        ...style,
-        backgroundImage: `url(${url})`
-    };
-    
+    useEffect(()=>{
+        // Progress loadState from 0 to 2
+        if (loadState > 0 && loadState < 2) {
+            setTimeout(()=>{
+                if (url!==effectiveUrl) 
+                    setEffectiveUrl(url);
+                setLoadState(loadState+1);
+            }, 200);        
+        }
+
+    },[loadState]);
+
+    useEffect(()=>{
+        // Init animate into new image on URL changed
+        if (url!==effectiveUrl) {
+            setLoadState(1);       
+        }        
+    },[url]);
+
+    const zIndex = loadState===1 ? -1 : 0;
+    const animation = loadState >= 2? fadeInAnimation : null;
+
     return (
-    <div className={className} style={containerStyle}>
-        {props.children}
-    </div>);
+        <BackgroundImgAnimatedDiv   src={effectiveUrl} 
+                                    zIndex={zIndex} 
+                                    animation={animation} 
+                                    className={className} 
+                                    style={style}>
+            {props.children}
+        </BackgroundImgAnimatedDiv>);
 }
+
+function LazyLoadBackgroundImg(props) {
+    const { previewUrl, url, style } = props;
+
+    const className = props.className || '';
+
+    const [imgUrl, setImgUrl] = useState(previewUrl);
+
+    useEffect(()=>{
+        loadImg();
+    },[url]);
+
+    const loadImg = () => {
+        setTimeout(()=>{
+            const img = new Image();
+            img.onload = () => setImgUrl(url);
+            img.src = url;
+        },300);
+    };
+
+    return (
+        <BackgroundImageFadeIn url={imgUrl} className={className} style={style}>
+            {props.children}
+        </BackgroundImageFadeIn>
+    )
+}
+
 
 function SIHBackgroundImage(props) {
 
@@ -182,15 +272,31 @@ function SIHBackgroundImage(props) {
 
     const config = { ...cxtConfig, ...props.config };  
 
-    const url = _create_url(props.src, config);
+    const [url, setUrl] = useState(_create_url(props.src, config));
+
+    useEffect(()=>{
+        const newConfig = { ...cxtConfig, ...props.config };  
+        setUrl(_create_url(props.src, newConfig));
+    },[props.src,...Object.values(cxtConfig),...Object.values(props.config)]);
+
+    // return (
+    // <BackgroundImageFadeIn url={url} style={props.style} className={props.className}>
+    //     {props.children}
+    // </BackgroundImageFadeIn>); 
 
     return (
-    <BackgroundImg url={url} style={props.style} className={props.className}>
-        {props.children}
-    </BackgroundImg>); 
+        <LazyLoadBackgroundImg 
+                previewUrl={null} 
+                url={url} 
+                style={props.style} 
+                className={props.className}>
+            {props.children}
+        </LazyLoadBackgroundImg>); 
 }
 
-function LazyLoadBackgroundImg(props) {
+
+
+function LazyLoadBackgroundImg2(props) {
 
     const {
         previewUrl,
@@ -203,57 +309,86 @@ function LazyLoadBackgroundImg(props) {
     const className = props.className || 'sih-lazyload-background-image';
 
     const [backgroundImage, setBackgroundImage] = useState(previewUrl);
+    const [loadState, setLoadState] = useState(0);
 
     const onload = () => {
-        setBackgroundImage(url);
+        setLoadState(1);        
     };
 
-    const loadImg = () => {
-        const img = new Image();
-        img.onload = onload;
-        img.src = url;
+    useEffect(()=>{
+        console.log('loadState: ' + loadState);
+        if (loadState > 0 && loadState < 2) {
+            console.log("Setting load state to " + (loadState + 1));
+            setTimeout(()=>setLoadState(loadState+1), 100);        
+        }
+
+    },[loadState]);
+
+    const loadImg = (url) => {
+        setTimeout(()=>{
+            console.log('loading img ' + url);
+            const img = new Image();
+            img.onload = onload;
+            img.src = url;
+        },1200);
     };
 
-    useEffect( ()=> {
-        loadImg();
-    }, []); 
+    useEffect (()=>{
+        loadImg(url);
+    }, [url]);
 
     const containerStyle = {
         ...style,
-        backgroundImage: `url(${backgroundImage})`,
-        transitionProperty: 'background',
-        transitionDuration: transitionDuration,
-        transitionTimingFunction: transitionTimingFunction
     };
     
-    return (
-    <div className={className} style={containerStyle}>
-        {props.children}
-    </div>);
-}
+
+    console.log(containerStyle);
+
+
+    if (loadState === 0)
+        return (
+            <BackgroundImgAnimatedDiv src={previewUrl} className={className} style={containerStyle}>
+                {props.children}
+            </BackgroundImgAnimatedDiv>);
+    //  if (loadState === 1)
+    //     return (
+    //         <StyledDiv src={previewUrl} zIndex={-1} animation={blurOutAnimation} className={className} style={containerStyle}>
+    //             {props.children}
+    //         </StyledDiv>);   
+     if (loadState === 1)
+        return (
+            <BackgroundImgAnimatedDiv src={url} zIndex={-1} className={className} style={containerStyle}>
+                {props.children}
+            </BackgroundImgAnimatedDiv>);   
+    if (loadState >= 2)
+        return (
+            <BackgroundImgAnimatedDiv src={url} animation={blurInAnimation} className={className} style={containerStyle}>
+                {props.children}
+            </BackgroundImgAnimatedDiv>);   
+
+    }
 
 function SIHLazyLoadBackgroundImage(props) {
 
     const cxtConfig = useContext(SIHContext); 
 
-    const config = { ...cxtConfig, ...props.config };  
+    const config = { ...cxtConfig, ...props.config };
 
     const { url, previewUrl } = _create_urls(props.src, config);
 
     return (
-    <LazyLoadBackgroundImg 
-            previewUrl={previewUrl} 
-            url={url} 
-            style={props.style} 
-            className={props.className}
-            transitionDuration={config.transitionDuration}
-            transitionTimingFunction={config.transitionTimingFunction}>
-        {props.children}
-    </LazyLoadBackgroundImg>); 
+        <LazyLoadBackgroundImg 
+                previewUrl={previewUrl} 
+                url={url} 
+                style={props.style} 
+                className={props.className}>
+            {props.children}
+        </LazyLoadBackgroundImg>); 
 }
 
 SIHImage.propTypes = {
     src: PropTypes.string.isRequired,
+    alt: PropTypes.string,
     className: PropTypes.string,
     style: PropTypes.string,
     width: PropTypes.oneOfType([
@@ -267,6 +402,7 @@ SIHImage.propTypes = {
 
 SIHLazyLoadImage.propTypes = {
     src: PropTypes.string.isRequired,
+    alt: PropTypes.string,
     className: PropTypes.string,
     imgClassName: PropTypes.string,
     style: PropTypes.string,
