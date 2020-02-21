@@ -272,17 +272,7 @@ function SIHBackgroundImage(props) {
 
     const config = { ...cxtConfig, ...props.config };  
 
-    const [url, setUrl] = useState(_create_url(props.src, config));
-
-    useEffect(()=>{
-        const newConfig = { ...cxtConfig, ...props.config };  
-        setUrl(_create_url(props.src, newConfig));
-    },[props.src,...Object.values(cxtConfig),...Object.values(props.config)]);
-
-    // return (
-    // <BackgroundImageFadeIn url={url} style={props.style} className={props.className}>
-    //     {props.children}
-    // </BackgroundImageFadeIn>); 
+    const url = _create_url(props.src, config);
 
     return (
         <LazyLoadBackgroundImg 
