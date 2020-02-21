@@ -115,7 +115,7 @@ function SIHImage(props) {
     useEffect(()=>{
         const newConfig = { ...cxtConfig, ...props.config };  
         setUrl(_create_url(props.src, newConfig));
-    },[props.src,...Object.values(cxtConfig),...Object.values(props.config)]);
+    },[props.src,...Object.values(config)]);
 
     return (<Img 
         url={url} 
@@ -160,7 +160,7 @@ function SIHLazyLoadImage(props) {
         const newConfig = { ...cxtConfig, ...props.config };  
         setUrls(_create_urls(props.src, newConfig));
 
-    },[props.src,...Object.values(cxtConfig),...Object.values(props.config)]);
+    },[props.src,...Object.values(config)]);
 
     return (<LazyLoadImg 
         previewUrl={previewUrl} 
@@ -175,27 +175,6 @@ function SIHLazyLoadImage(props) {
         transitionTimingFunction={config.transitionTimingFunction}
     />)
 }
-
-
-// function BackgroundImg(props) {
-//     const {
-//         url,
-//         style
-//     } = props;
-
-//     const className = props.className || 'sih-background-image';
-
-//     const containerStyle = {
-//         ...style,
-//         backgroundImage: `url(${url})`
-//     };
-    
-//     return (
-//     <div className={className} style={containerStyle}>
-//         {props.children}
-//     </div>);
-// }
-
 
 function BackgroundImageFadeIn(props) {
     const {
