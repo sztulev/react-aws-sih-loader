@@ -16,7 +16,7 @@ const fadeInKeyFrames = keyframes`
     opacity: 1;
 }`  
 
-const fadeInAnimation = css`${fadeInKeyFrames} .5s ease-in`;
+const fadeInAnimation = css`${fadeInKeyFrames} .3s ease-in`;
 
 const BackgroundImgAnimatedDiv = styled.div`
     position: relative;

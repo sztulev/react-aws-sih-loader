@@ -184,35 +184,33 @@ function BackgroundImageFadeIn(props) {
         debug
     } = props;
 
-    const [effectiveUrl, setEffectiveUrl] = useState(url);
-    const [loadState, setLoadState] = useState(0);
+    const [state, setState] = useState({ 
+        url: url, 
+        loading: 0 });
 
     useEffect(()=>{
         // Progress loadState from 0 to 2
-        if (loadState > 0 && loadState < 2) {
+        if (state.loading === 1) {
             setTimeout(()=>{
-                if (url!==effectiveUrl) 
-                    setEffectiveUrl(url);
-                setLoadState(loadState+1);
-            }, 200);        
+                setState({...state, loading: 2 });      
+            },200);
         }
 
-    },[loadState]);
+    },[state]);
 
     useEffect(()=>{
         // Init animate into new image on URL changed
-        if (url!==effectiveUrl) {
-            if (debug)
-                console.debug('Background image changed');
-            setLoadState(1);       
-        }        
+        if (debug)
+            console.debug('Background image changed');
+
+        setState({ url: url, loading: 1 })    
     },[url]);
 
-    const zIndex = loadState===1 ? -1 : 0;
-    const animation = loadState >= 2? fadeInAnimation : null;
+    const zIndex = state.loading===1 ? -1 : 0;
+    const animation = state.loading >= 2? fadeInAnimation : null;
 
     return (
-        <BackgroundImgAnimatedDiv   src={effectiveUrl} 
+        <BackgroundImgAnimatedDiv   src={state.url} 
                                     zIndex={zIndex} 
                                     animation={animation} 
                                     className={className} 
