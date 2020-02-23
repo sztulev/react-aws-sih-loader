@@ -101,11 +101,26 @@ function _create_urls(key, config) {
     return { url, previewUrl };
 }
 
+function _debounce(fn, time) {
+    let timeout;
+  
+    return function() {
+      const functionCall = () => fn.apply(this, arguments);
+      
+      clearTimeout(timeout);
+      timeout = setTimeout(functionCall, time);
+    }
+}
+
 function Img({ url, alt, width, height, style, className}) {
     return (<img src={url} style={style} className={className} width={width} height={height} alt={alt}/>);
 }
 
 function SIHImage(props) {
+
+    if (!props.src)
+        return null;
+
     const cxtConfig = useContext(SIHContext); 
 
     const config = { ...cxtConfig, ...props.config };  
@@ -150,6 +165,10 @@ function LazyLoadImg({previewUrl, url, alt, width, height, style, className, img
 }
 
 function SIHLazyLoadImage(props) {
+
+    if (!props.src)
+        return null;
+
     const cxtConfig = useContext(SIHContext);
     
     const config = { ...cxtConfig, ...props.config };  
@@ -193,25 +212,27 @@ function BackgroundImageFadeIn(props) {
         if (state.loading === 1) {
             setTimeout(()=>{
                 setState({...state, loading: 2 });      
-            },200);
+            },100);
         }
 
     },[state]);
 
     useEffect(()=>{
         // Init animate into new image on URL changed
-        if (debug)
-            console.debug('Background image changed');
-
-        setState({ url: url, loading: 1 })    
+        if (url!==state.url) {
+            if (debug)
+                console.debug('Background image changed');            
+            setState({ url: url, loading: 1 }) 
+        }   
     },[url]);
 
-    const zIndex = state.loading===1 ? -1 : 0;
+    const opacity = state.loading >=2 ? 1 : 0;
     const animation = state.loading >= 2? fadeInAnimation : null;
 
     return (
         <BackgroundImgAnimatedDiv   src={state.url} 
-                                    zIndex={zIndex} 
+                                    zIndex={0}
+                                    opacity={opacity} 
                                     animation={animation} 
                                     className={className} 
                                     style={style}>
@@ -227,18 +248,17 @@ function LazyLoadBackgroundImg(props) {
     const [imgUrl, setImgUrl] = useState(previewUrl);
 
     useEffect(()=>{
-        loadImg();
+        if ( url !== imgUrl);
+            loadImg();
     },[url]);
 
-    const loadImg = () => {
-        setTimeout(()=>{
-            if (debug)
-                console.debug('loading Image %s', url);               
-            const img = new Image();
-            img.onload = () => setImgUrl(url);
-            img.src = url;
-        },300);
-    };
+    const loadImg = _debounce(() => {
+        if (debug)
+            console.debug('loading Image %s', url);               
+        const img = new Image();
+        img.onload = () => setImgUrl(url);
+        img.src = url;
+    },1000);
 
     return (
         <BackgroundImageFadeIn url={imgUrl} className={className} style={style} debug={debug}>
@@ -249,6 +269,9 @@ function LazyLoadBackgroundImg(props) {
 
 
 function SIHBackgroundImage(props) {
+
+    if (!props.src)
+    return null;
 
     const cxtConfig = useContext(SIHContext); 
 
@@ -266,6 +289,9 @@ function SIHBackgroundImage(props) {
 }
 
 function SIHLazyLoadBackgroundImage(props) {
+
+    if (!props.src)
+        return null;
 
     const cxtConfig = useContext(SIHContext); 
 

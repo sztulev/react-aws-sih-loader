@@ -29,6 +29,7 @@ const BackgroundImgAnimatedDiv = styled.div`
         bottom: 0;
         right: 0;
         position: absolute;
+        opacity: ${props=>props.opacity?props.opacity:0};
         z-index: ${props=>props.zIndex?props.zIndex:0};   
         animation: ${props=>props.animation};
         background-image: url(${props=>props.src});
