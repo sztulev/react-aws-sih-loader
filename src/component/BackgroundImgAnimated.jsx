@@ -1,6 +1,5 @@
 import styled, { css, keyframes } from 'styled-components';
 
-
 const fadeInKeyFrames = keyframes`
 0% {
     opacity: 0;   
@@ -16,7 +15,7 @@ const fadeInKeyFrames = keyframes`
     opacity: 1;
 }`  
 
-const fadeInAnimation = css`${fadeInKeyFrames} .3s ease-in`;
+const fadeInAnimation = css`${fadeInKeyFrames} .1s ease-in`;
 
 const BackgroundImgAnimatedDiv = styled.div`
     position: relative;
@@ -29,7 +28,7 @@ const BackgroundImgAnimatedDiv = styled.div`
         bottom: 0;
         right: 0;
         position: absolute;
-        opacity: ${props=>props.opacity?props.opacity:0};
+        opacity: ${props=>typeof props.opacity === 'number' ?props.opacity: 1 };
         z-index: ${props=>props.zIndex?props.zIndex:0};   
         animation: ${props=>props.animation};
         background-image: url(${props=>props.src});
