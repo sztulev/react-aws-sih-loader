@@ -157,17 +157,22 @@ const Container = styled.div`
     backgroundRepeat: no-repeat;
     width: ${props=>props.width?props.width:'auto'};
     height: ${props=>props.height?props.height:'auto'};
+    background-image: url(${props=>props.backgroundImage?props.backgroundImage:''});
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
 
     &:before{
         content: "";
         position: absolute;
+        z-index:-1;
         top: 0;
         left: 0;
         bottom: 0;
         right: 0;
         position: absolute;
         opacity: ${props=>typeof props.opacity === 'number' ?props.opacity: 1 };
-        background-image: url(${props=>props.backgroundImage?props.backgroundImage:''});
+        background-image: url(${props=>props.img?props.img:''});
         background-size: cover;
         background-position: center center;
         background-repeat: no-repeat;
@@ -225,7 +230,7 @@ function LazyLoadImg(props) {
     }, [url]); 
 
     return (
-        <Container className={className} backgroundImage={loadState.previewUrl} style={style} >
+        <Container className={className} img={loadState.img} backgroundImage={loadState.previewUrl} style={style} >
             <AnimatedImg src={loadState.img} 
                 className={imgClassname?imgClassname:`${className}--img`}
                 alt={alt}
