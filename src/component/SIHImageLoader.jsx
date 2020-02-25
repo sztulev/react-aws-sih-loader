@@ -144,8 +144,12 @@ function SIHImage(props) {
 }
 
 
+const ChildContainer = styled.div`
+    position: relative;
+`;
 
 const Container = styled.div`
+    position: relative;
     display: flex;
     overflow: hidden;  
     backgroundSize: cover;
@@ -153,13 +157,25 @@ const Container = styled.div`
     backgroundRepeat: no-repeat;
     width: ${props=>props.width?props.width:'auto'};
     height: ${props=>props.height?props.height:'auto'};
-    background-size:cover;
-    background-position: center center;
-    background-image: url(${props=>props.backgroundImage?props.backgroundImage:''});
-    data-image: ${props=>props.dataImage};
-    `;
+
+    &:before{
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        position: absolute;
+        opacity: ${props=>typeof props.opacity === 'number' ?props.opacity: 1 };
+        background-image: url(${props=>props.backgroundImage?props.backgroundImage:''});
+        background-size: cover;
+        background-position: center center;
+        background-repeat: no-repeat;
+    }
+`;
 
 const AnimatedImg = styled.img`
+    position: relative;
     opacity: ${props=>typeof props.imgOpacity === "number"?props.imgOpacity:1};
     transitionProperty: opacity;
     transition-duration: ${props=>props.transitionDuration?props.transitionDuration + 'ms':''};
@@ -188,15 +204,12 @@ function LazyLoadImg(props) {
         loaded: false
     });
 
-
-
     const onload = () => {
         setLoadState({
             previewUrl: previewUrl,
             img: url,
             loaded: true
         })
-        
     }
 
     const loadImg = _debounce(() => {
@@ -212,16 +225,16 @@ function LazyLoadImg(props) {
     }, [url]); 
 
     return (
-        <Container className={className} backgroundImage={loadState.previewUrl} data-image={url} style={style} >
+        <Container className={className} backgroundImage={loadState.previewUrl} style={style} >
             <AnimatedImg src={loadState.img} 
-                className={imgClassname}
+                className={imgClassname?imgClassname:`${className}--img`}
                 alt={alt}
                 width={width} 
                 height={height} 
                 transitionDuration={transitionDuration} 
                 transitionTimingFunction={transitionTimingFunction} 
                 imgOpacity={loadState.loaded?1:0}/>
-            {props.children}
+            {props.children?(<ChildContainer className={className?`${className}--content`:''}>{props.children}</ChildContainer>):null}
         </Container>);
 }
 
