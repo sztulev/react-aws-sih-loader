@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import { PropTypes } from 'prop-types';
 import { SIHContext } from './SIHContext';
 import { ConfigPropType } from './AWSSIHConfig.jsx';
+import styled from 'styled-components';
 
 import BackgroundImgAnimatedDiv, { fadeInAnimation } from './BackgroundImgAnimated.jsx';
 
@@ -142,6 +143,29 @@ function SIHImage(props) {
     />);
 }
 
+
+
+const Container = styled.div`
+    display: flex;
+    overflow: hidden;  
+    backgroundSize: cover;
+    backgroundPosition: center;
+    backgroundRepeat: no-repeat;
+    width: ${props=>props.width?props.width:'auto'};
+    height: ${props=>props.height?props.height:'auto'};
+    background-size:cover;
+    background-position: center center;
+    background-image: url(${props=>props.backgroundImage?props.backgroundImage:''});
+    data-image: ${props=>props.dataImage};
+    `;
+
+const AnimatedImg = styled.img`
+    opacity: ${props=>typeof props.imgOpacity === "number"?props.imgOpacity:1};
+    transitionProperty: opacity;
+    transition-duration: ${props=>props.transitionDuration?props.transitionDuration + 'ms':''};
+    transition-timing-function: ${props=>props.transitionTimingFunction?props.transitionTimingFunction:''};
+`;
+
 function LazyLoadImg(props) {
     const {
         previewUrl, 
@@ -153,27 +177,52 @@ function LazyLoadImg(props) {
         className, 
         imgClassname, 
         transitionDuration, 
-        transitionTimingFunction} = props;
+        transitionTimingFunction,
+        debug } = props;
 
-    const [imgStyle, setImgStyle] = useState({...defaultImageStyle, width, height, transitionDuration, transitionTimingFunction});
+    // const [imgStyle, setImgStyle] = useState({...defaultImageStyle, width, height, transitionDuration, transitionTimingFunction});
 
-    const [imgSrc, setImgSrc] = useState();
+    const [loadState, setLoadState] = useState({
+        previewUrl: previewUrl,
+        img: previewUrl, 
+        loaded: false
+    });
 
-    const containerStyle = { ...defaultContainerStyle, ...style, backgroundImage: `url(${previewUrl})` };
+
 
     const onload = () => {
-        setImgStyle({...imgStyle, opacity: 1});
-    };
+        setLoadState({
+            previewUrl: previewUrl,
+            img: url,
+            loaded: true
+        })
+        
+    }
+
+    const loadImg = _debounce(() => {
+        if (debug)
+            console.debug('loading Image %s', url);               
+        const img = new Image();
+        img.onload = onload;
+        img.src = url;
+    },500);
 
     useEffect( ()=> {
-        setImgSrc(url);
+        loadImg();
     }, [url]); 
 
     return (
-    <div className={className || ''} style={containerStyle}>
-        <img src={imgSrc} style={imgStyle} onLoad={onload} className={imgClassname} alt={alt}/>
-        {props.children}
-    </div>);
+        <Container className={className} backgroundImage={loadState.previewUrl} data-image={url} style={style} >
+            <AnimatedImg src={loadState.img} 
+                className={imgClassname}
+                alt={alt}
+                width={width} 
+                height={height} 
+                transitionDuration={transitionDuration} 
+                transitionTimingFunction={transitionTimingFunction} 
+                imgOpacity={loadState.loaded?1:0}/>
+            {props.children}
+        </Container>);
 }
 
 function SIHLazyLoadImage(props) {
@@ -202,8 +251,9 @@ function SIHLazyLoadImage(props) {
         style={props.style} 
         className={props.className}
         imgClassname = {props.imgClassName}
-        transitionDuration={config.transitionDuration}
+        transitionDuration={ config.transitionDuration && typeof config.transitionDuration ==='number'? config.transitionDuration : 500 }
         transitionTimingFunction={config.transitionTimingFunction}
+        debug={config.debug}
     >
         {props.children}
     </LazyLoadImg>)
