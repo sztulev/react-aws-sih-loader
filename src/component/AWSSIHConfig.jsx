@@ -13,7 +13,7 @@ const ConfigPropType = {
     previewHeight: PropTypes.number, 
     previewResizeMode: PropTypes.oneOf(['fill', 'contain', 'cover', 'inside', 'outside']),
     previewGrayscale: PropTypes.boolean,
-    transitionDuration: PropTypes.string,
+    transitionDuration: PropTypes.number,
     transitionTimingFunction: PropTypes.string
 }
 
@@ -29,7 +29,7 @@ const defaultConfig = {
     previewHeight: 50, 
     previewResizeMode: null,
     previewGrayscale: false,
-    transitionDuration: '.5s',
+    transitionDuration: 500,
     transitionTimingFunction: 'linear'
 }
 

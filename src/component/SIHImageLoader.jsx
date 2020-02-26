@@ -2,23 +2,8 @@ import React, { useContext, useState, useEffect } from 'react';
 import { PropTypes } from 'prop-types';
 import { SIHContext } from './SIHContext';
 import { ConfigPropType } from './AWSSIHConfig.jsx';
-import styled from 'styled-components';
+import { fadeInAnimation, BackgroundImgAnimatedDiv, Container , ChildContainer, AnimatedImg } from './StyledComponents.jsx';
 
-import BackgroundImgAnimatedDiv, { fadeInAnimation } from './BackgroundImgAnimated.jsx';
-
-
-const defaultContainerStyle ={
-    display: 'flex',
-    overflow: 'hidden',  
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat'
-}
-
-const defaultImageStyle = {
-    opacity: 0,
-    transitionProperty: 'opacity'
-}
 
 function _encode(endpoint, param_obj) {
     const obj_str = JSON.stringify(param_obj);
@@ -143,50 +128,6 @@ function SIHImage(props) {
     />);
 }
 
-
-const ChildContainer = styled.div`
-    position: relative;
-`;
-
-const Container = styled.div`
-    position: relative;
-    display: flex;
-    overflow: hidden;  
-    backgroundSize: cover;
-    backgroundPosition: center;
-    backgroundRepeat: no-repeat;
-    width: ${props=>props.width?props.width:'auto'};
-    height: ${props=>props.height?props.height:'auto'};
-    background-image: url(${props=>props.backgroundImage?props.backgroundImage:''});
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-
-    &:before{
-        content: "";
-        position: absolute;
-        z-index:-1;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        right: 0;
-        position: absolute;
-        opacity: ${props=>typeof props.opacity === 'number' ?props.opacity: 1 };
-        background-image: url(${props=>props.img?props.img:''});
-        background-size: cover;
-        background-position: center center;
-        background-repeat: no-repeat;
-    }
-`;
-
-const AnimatedImg = styled.img`
-    position: relative;
-    opacity: ${props=>typeof props.imgOpacity === "number"?props.imgOpacity:1};
-    transitionProperty: opacity;
-    transition-duration: ${props=>props.transitionDuration?props.transitionDuration + 'ms':''};
-    transition-timing-function: ${props=>props.transitionTimingFunction?props.transitionTimingFunction:''};
-`;
-
 function LazyLoadImg(props) {
     const {
         previewUrl, 
@@ -200,9 +141,7 @@ function LazyLoadImg(props) {
         transitionDuration, 
         transitionTimingFunction,
         debug } = props;
-
-    // const [imgStyle, setImgStyle] = useState({...defaultImageStyle, width, height, transitionDuration, transitionTimingFunction});
-
+        
     const [loadState, setLoadState] = useState({
         previewUrl: previewUrl,
         img: previewUrl, 
@@ -237,8 +176,9 @@ function LazyLoadImg(props) {
                 width={width} 
                 height={height} 
                 transitionDuration={transitionDuration} 
-                transitionTimingFunction={transitionTimingFunction} 
-                imgOpacity={loadState.loaded?1:0}/>
+                transitionTimingFunction={transitionTimingFunction?transitionTimingFunction:'ease-out'} 
+                imgOpacity={loadState.loaded?1:0}
+                />
             {props.children?(<ChildContainer className={className?`${className}--content`:''}>{props.children}</ChildContainer>):null}
         </Container>);
 }
